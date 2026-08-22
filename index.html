@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>山司三十天：速通军训</title>
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<div class="game-shell" id="gameShell">
+  <div class="status-card">
+    <div class="status-header">
+      <div class="status-title">今天是个不好日子 · 开学在即，做好准备！</div>
+      <button class="theme-toggle" id="themeToggle" type="button" title="切换主题">◐</button>
+      <button class="music-toggle" id="musicToggle" type="button" title="播放音乐" aria-label="播放音乐">♫</button>
+    </div>
+    <div class="status-grid" id="statusBar" style="display:none;">
+      <div class="status-item"><div class="label">生命值</div><div class="value health" id="valHealth">100</div><div class="sub">体力 / 健康</div></div>
+      <div class="status-item"><div class="label">理智</div><div class="value sanity" id="valSanity">100</div><div class="sub">精神状态</div></div>
+      <div class="status-item"><div class="label">金钱</div><div class="value money" id="valMoney">80</div><div class="sub">可支配资金</div></div>
+      <div class="status-item"><div class="label">评分</div><div class="value score" id="valScore">50</div><div class="sub">军训表现</div></div>
+      <div class="status-item"><div class="label">教官A · 好感度</div><div class="value instructor-a" id="valA">0</div><div class="sub">规矩派</div></div>
+      <div class="status-item"><div class="label">教官B · 好感度</div><div class="value instructor-b" id="valB">0</div><div class="sub">人情派</div></div>
+      <div class="status-item"><div class="label">回合</div><div class="value" id="valRound">1/10</div><div class="sub">事件进度</div></div>
+      <div class="status-item"><div class="label">天数</div><div class="value" id="valDay">1/30</div><div class="sub">军训进度</div></div>
+    </div>
+  </div>
+
+  <div class="main-card">
+    <div class="main-card-inner" id="mainArea">
+      <div class="start-screen" id="startScreen">
+        <h1>山司三十天：速通军训</h1>
+        <div class="start-tagline">一个学长夏季把乱写的拟真生存模拟</div>
+        <div class="start-quote">「一人生病，全家吃药！」</div>
+        <div class="start-brief">   你揣着<span class="brief-red">热血</span>跨进大门，以为有学长的欢迎与战友的鼓励。可是现实一棍敲醒你：三十天烈日晒软柏油路，口号震耳欲聋，熄灯后只能在厕所隔间漏出手机光，手机里存款数字不断变换。步入校门感觉人生要完蛋了。可是，我的结局让我来选择！<span class="brief-red">我命由我不由天~</span>（魔丸音）<br><br>一共十个回合，你要做三十个选择。每回合会遇到一个事件，其余两天由你选择认真训练、摸鱼或跟队长请假。生命、理智、金钱、军训评分会同时被太阳烤着——撑到大会操那天，<strong>教官A与教官B的好感度（Ciallo～(∠・ω< )⌒☆）</strong>将决定你最后的剧情分支，是踢好正步成为<span class="brief-red">人中龙凤</span>，还是洞察<span class="brief-red">人心</span>成为最后赢家。</div>
+        <div class="out-rules"><h2>出局线!（开局要看清哦）</h2><ul><li><span>生命 ≤ 0</span>　送医离校</li><li><span>理智 ≤ 0</span>　精神崩溃</li><li><span>金钱 &lt; -20</span>　贷款危机</li><li><span>评分 &lt; 0</span>　队长约谈</li></ul></div>
+        <div class="home-actions">
+          <button class="start-btn" onclick="openInitialShop()">开始军训</button>
+          <button class="guide-home-btn" onclick="openGameGuide()" type="button">新手教程</button>
+        </div>
+      </div>
+      <div id="gameScreen" class="hidden">
+        <div class="fade-wrapper" id="fadeWrapper">
+          <div class="event-title" id="eventTitle"></div>
+          <div class="event-text" id="eventText"></div>
+          <div class="choices" id="choices"></div>
+        </div>
+      </div>
+      <div class="end-screen hidden" id="endScreen">
+        <div class="end-title" id="endTitle"></div>
+        <div class="end-desc" id="endDesc"></div>
+        <button class="restart-btn" onclick="location.reload()">重新开始</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="guide-overlay" id="guideOverlay" aria-hidden="true">
+  <section class="guide-panel" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+    <div class="guide-progress" id="guideProgress">新手引导 · 1 / 3</div>
+    <h2 class="guide-title" id="guideTitle">先撑下来，再争表现</h2>
+    <div class="guide-content" id="guideContent"></div>
+    <div class="guide-actions">
+      <button class="guide-skip" id="guideSkipBtn" type="button">跳过引导</button>
+      <button class="guide-never" id="guideNeverBtn" type="button">不再显示</button>
+      <button class="guide-next" id="guideNextBtn" type="button">下一步</button>
+    </div>
+  </section>
+</div>
+
+<div class="easter-egg-overlay" id="easterEggOverlay" aria-hidden="true">
+  <section class="easter-egg-panel" role="dialog" aria-modal="true" aria-labelledby="easterEggTitle">
+    <div class="easter-egg-spark">彩蛋解锁</div>
+    <h2 class="easter-egg-title" id="easterEggTitle">哈哈哈恭喜你触发彩蛋了</h2>
+    <p class="easter-egg-text">这个白天模式适配我也不会写，开学来帮我~help！</p>
+    <button class="easter-egg-close" id="easterEggClose" type="button">好嘞，收到</button>
+  </section>
+</div>
+
+<section class="music-player" id="musicPlayer" aria-label="音乐播放器" aria-hidden="true">
+  <div class="music-player-art" aria-hidden="true">没有共产党<br>就没有新中国</div>
+  <div class="music-player-info">
+    <div class="music-player-kicker">NOW PLAYING</div>
+    <div class="music-player-title">没有共产党就没有新中国</div>
+    <div class="music-player-artist">我们平常在警校就把红歌唱起来~</div>
+  </div>
+  <audio id="gameMusic" src="没有共产党就没有新中国.mp3" preload="metadata" autoplay></audio>
+  <div class="music-player-controls">
+    <button id="musicPlayButton" type="button" title="播放音乐" aria-label="播放音乐">▶</button>
+    <input id="musicProgress" type="range" min="0" max="100" value="0" step="0.1" aria-label="音乐进度">
+    <button id="musicCloseButton" type="button" title="收起播放器" aria-label="收起播放器">×</button>
+  </div>
+</section>
+
+<section class="diary-card" id="diaryCard" aria-label="日记">
+  <div class="diary-header">
+    <div>
+      <div class="diary-kicker">FIELD NOTES</div>
+      <h2 class="diary-title">日记</h2>
+    </div>
+    <span class="diary-caption">天天早六的日子什么时候结束啊？</span>
+  </div>
+  <div class="log-area" id="logArea"></div>
+</section>
+
+<div class="backpack-card" id="backpackCard" style="display:none;">
+  <div class="backpack-title" id="backpackTitle" role="button" tabindex="0" aria-expanded="false" title="展开背包"><div class="backpack-title-left"><span class="bag-emoji">🎒</span><span>背包</span></div><span class="backpack-slots" id="backpackSlots">0 / 12</span></div>
+  <div class="backpack-items" id="backpackItems"></div>
+  <div class="backpack-hint">点击物品就能用啦</div>
+</div>
+
+<div class="round5-story-overlay" id="round5StoryOverlay">
+  <div class="round5-story-card">
+    <div class="round5-story-kicker">第 5 回合 · 家人的牵挂</div>
+    <div class="round5-story-title">父母给你转来一笔钱</div>
+    <div class="round5-story-text">手机亮了一下，是父母的消息。</div>
+    <div class="round5-story-quote">“军训辛苦了，别舍不得吃。给你转点钱，去买点好吃的，照顾好自己。”</div>
+    <button class="round5-story-btn" id="round5StoryBtn" type="button">收下钱，整点好的</button>
+  </div>
+</div>
+
+<div class="round1-story-overlay" id="round1StoryOverlay">
+  <div class="round1-story-card">
+    <div class="round1-story-kicker">第一回合结束 · 第 4 天</div>
+    <div class="round1-story-title">几天下来，这里的生活和你想的完全不一样……</div>
+    <div class="round1-story-text">哨声、口号、汗水，还有教官不带情绪的命令，已经把“军训只是站站队”的幻想磨得一干二净。你开始明白，真正难熬的不是某一次惩罚，而是每一天都要面对的身体疲惫与制度的约束。疲惫不堪~</div>
+    <div class="round1-story-quote">你抬头看了一眼操场。太阳仍然灿烂照常升起，而你已经不像刚来时那么笃定了。</div>
+    <div class="round1-story-effect"><strong>本回合触发失望</strong><br>生命值调整为 50<br>理智调整为 50</div>
+    <button class="round1-story-btn" id="round1StoryBtn" type="button">接受现实，坚定信念</button>
+  </div>
+</div>
+
+<div class="shop-overlay" id="shopOverlay"></div>
+<div class="shop-stack" id="shopStack">
+<div class="shop-panel" id="shopPanel">
+  <div class="shop-status-bar" id="shopStatusBar">
+    <div class="status-item"><div class="label">生命</div><div class="value health" id="shopHealth">100</div></div>
+    <div class="status-item"><div class="label">理智</div><div class="value sanity" id="shopSanity">100</div></div>
+    <div class="status-item"><div class="label">金钱</div><div class="value money" id="shopMoney">80</div></div>
+    <div class="status-item"><div class="label">评分</div><div class="value score" id="shopScore">50</div></div>
+    <div class="status-item"><div class="label">教官A·好感度</div><div class="value instructor-a" id="shopA">0</div></div>
+    <div class="status-item"><div class="label">教官B·好感度</div><div class="value instructor-b" id="shopB">0</div></div>
+  </div>
+  <div class="shop-content">
+    <div class="shop-title" id="shopTitle">校园小卖部</div>
+    <div class="shop-subtitle" id="shopSubtitle">做好出发前的准备，必须把钱花在刀刃上</div>
+    <div id="shopItems"></div>
+  </div>
+</div>
+<div class="shop-actions">
+  <button class="close-shop" id="shopCloseBtn" onclick="closeShop()">进入军训</button>
+</div>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay"></div>
+<div class="confirm-panel" id="confirmPanel">
+  <div class="confirm-title" id="confirmTitle">警告</div>
+  <div class="confirm-text" id="confirmText"></div>
+  <div class="confirm-btns">
+    <button class="confirm-btn confirm-btn-back" onclick="undoLastAction()">返回上一步</button>
+    <button class="confirm-btn confirm-btn-continue" onclick="confirmEndGame()">接受命运</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
